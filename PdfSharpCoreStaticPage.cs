@@ -7,7 +7,7 @@ using System.IO;
 public static class PdfSharpCoreStaticPage
 {
 
-  private static string fF = "Arial";
+  private static string fF = "csHelveticaBold";
   private static XFont h1 = new XFont(fF, 20, XFontStyle.Bold);
   private static XFont h2 = new XFont(fF, 16, XFontStyle.Bold);
   private static XFont h3 = new XFont(fF, 14, XFontStyle.Bold);
