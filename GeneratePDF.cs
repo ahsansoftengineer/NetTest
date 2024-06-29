@@ -1,9 +1,12 @@
 
 using sharpPDF;
 using sharpPDF.Enumerators;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
 namespace NetTest.GeneratePDF
 {
-    public class GenerateTable
+    public static class GenerateTable
     {
         public static predefinedFont fontBold = predefinedFont.csHelveticaBold;
         public static predefinedFont font = predefinedFont.csHelvetica;
@@ -15,17 +18,24 @@ namespace NetTest.GeneratePDF
 
             // Add a new page to the document
             pdfPage myPage = myDoc.addPage();
-
             // Add main title
-            myPage.addText("NC - Main Inventory", 50, 800, fontBold, 16);
+            int yAxis = 750;
+
+            myPage.AddImage(50, yAxis);
+            myPage.addText("Muhammad Ahsan Moin", 200, yAxis -= 25, fontBold, 22, predefinedColor.csBlue);
+            myPage.addText("NC - Main Inventory", 50, yAxis -= 25, fontBold, 16);
 
             // Add first section
-            AddSection(myPage, "Natural Calm Original 16Oz", "SKU_NEW_3-S", "salman barcode", "60.00", "100.00",
-                       new string[,] { { "S1R1B2", "1142533-S", "2025-06-30", "12.02", "GROUP C", "48", "48" } }, 750);
+            myPage.AddSection(                "Natural Calm Original 16Oz",
+                "SKU_NEW_3-S",
+                "salman barcode",
+                "60.00",
+                "100.00",
+                       new string[,] { { "S1R1B2", "1142533-S", "2025-06-30", "12.02", "GROUP C", "48", "48" } }, yAxis -= 30);
 
             // Add second section
-            AddSection(myPage, "Multi Vitamin 110", "MSTESTSKU110-S", "3245667", "50.55", "62.55",
-                       new string[,] { { "S2R3B4", "MSLOT111-S", "2025-06-12", "11.43", "GROUP D", "10", "20" } }, 600);
+            myPage.AddSection("Multi Vitamin 110", "MSTESTSKU110-S", "3245667", "50.55", "62.55",
+                       new string[,] { { "S2R3B4", "MSLOT111-S", "2025-06-12", "11.43", "GROUP D", "10", "20" } }, yAxis -= 120);
 
             // Save the document
             myDoc.createPDF(@"./file.pdf");
@@ -33,7 +43,7 @@ namespace NetTest.GeneratePDF
             Console.WriteLine("PDF created successfully!");
         }
 
-        private static void AddSection(pdfPage page, string title, string sku, string barcode, string cost, string listPrice, string[,] tableData, int startY)
+        private static void AddSection(this pdfPage page, string title, string sku, string barcode, string cost, string listPrice, string[,] tableData, int startY)
         {
             page.addText(title, 50, startY, fontBold, 12);
 
@@ -53,13 +63,13 @@ namespace NetTest.GeneratePDF
             pdfTable table = new pdfTable();
 
             table.borderSize = 1;
-            table.tableHeader.addColumn(new pdfTableColumn("Location", align, 60));
-            table.tableHeader.addColumn(new pdfTableColumn("Lot", align, 100));
-            table.tableHeader.addColumn(new pdfTableColumn("Expiry", align, 80));
-            table.tableHeader.addColumn(new pdfTableColumn("R.MTH", align, 60));
-            table.tableHeader.addColumn(new pdfTableColumn("PG", align, 80));
-            table.tableHeader.addColumn(new pdfTableColumn("OH QTY", align, 60));
-            table.tableHeader.addColumn(new pdfTableColumn("AVL QTY", align, 60));
+            table.AddHeader("Location", 60);
+            table.AddHeader("Lot", 100);
+            table.AddHeader("Expiry", 80);
+            table.AddHeader("R.MTH", 60);
+            table.AddHeader("PG", 80);
+            table.AddHeader("OH QTY", 60);
+            table.AddHeader("AVL QTY", 60);
 
             for (int i = 0; i < tableData.GetLength(0); i++)
             {
@@ -73,35 +83,43 @@ namespace NetTest.GeneratePDF
 
             page.addTable(table, 50, startY - 50);
         }
-        // public static void PrintTable()
+
+        private static void AddHeader(this pdfTable table, string Value, int columnAlign)
+        {
+            table.tableHeader.addColumn(new pdfTableColumn(Value, align, columnAlign));
+        }
+
+        public static void AddImage(this pdfPage myPage, int x, int y)
+        {
+
+            string imagePath = "user.jpg";
+
+            // Convert the image to a byte array
+            Stream imgData = ConvertImageToByteArray(imagePath);
+
+            // Add image to the top left corner
+            if (imgData != null)
+            {
+                myPage.addImage(imgData, x, y, 100, 50); // 100 width, 50 height
+            }
+        }
+
+      
+        private static Stream ConvertImageToByteArray(string imagePath)
+        {
+            using var image = Image.Load<Rgba32>(imagePath);
+            using var ms = new MemoryStream();
+            image.SaveAsJpeg(ms); // or image.SaveAsPng(ms);
+            return ms;
+        }
+        // private static byte[] ConvertImageToByteArray(string imagePath)
         // {
-        //    // Create a new PDF document
-        //     pdfDocument myDoc = new pdfDocument("My PDF Document", "Me");
-
-        //     // Add a new page to the document
-        //     pdfPage myPage = myDoc.addPage();
-
-        //     // Add text to the page
-        //     myPage.addText("Hello, PDF!", 50, 700, sharpPDF.Enumerators.predefinedFont.csHelvetica, 12);
-
-        //     // Add a table to the page
-        //     pdfTable myTable = new pdfTable();
-        //     myTable.borderSize = 1;
-        //     // myTable.coordX = 50;
-        //     // myTable.coordY = 650;
-        //     myTable.tableHeader.addColumn(new pdfTableColumn("Column 1", sharpPDF.Enumerators.predefinedAlignment.csCenter, 100));
-        //     myTable.tableHeader.addColumn(new pdfTableColumn("Column 2", sharpPDF.Enumerators.predefinedAlignment.csCenter, 100));
-        //     pdfTableRow myRow = myTable.createRow();
-        //     myRow[0].columnValue = "Value 1";
-        //     myRow[1].columnValue = "Value 2";
-        //     myTable.addRow(myRow);
-
-        //     myPage.addTable(myTable, 50, 650);
-
-        //     // Save the document
-        //     myDoc.createPDF(@"./file.pdf");
-
-        //     Console.WriteLine("PDF created successfully!");
+        //     using var image = Image.Load<Rgba32>(imagePath);
+        //     using var ms = new MemoryStream();
+        //     image.SaveAsJpeg(ms); // or image.SaveAsPng(ms);
+        //     return ms.ToArray();
         // }
+
     }
+
 }
