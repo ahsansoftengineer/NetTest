@@ -26,7 +26,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 { 
-    PdfSharpCoreStaticPage.GeneratePdf();
+    PdfSharpCoreStaticPage.PrintTable();
     GenerateTable.PrintTable();
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast

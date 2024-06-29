@@ -1,106 +1,76 @@
+
 using PdfSharpCore.Drawing;
-using PdfSharpCore.Fonts;
 using PdfSharpCore.Pdf;
-using System;
-using System.IO;
 
-public static class PdfSharpCoreStaticPage
+namespace NetTest.GeneratePDF
 {
-
-  private static string fF = "csHelveticaBold";
-  private static XFont h1 = new XFont(fF, 20, XFontStyle.Bold);
-  private static XFont h2 = new XFont(fF, 16, XFontStyle.Bold);
-  private static XFont h3 = new XFont(fF, 14, XFontStyle.Bold);
-  private static XFont p = new XFont(fF, 12, XFontStyle.Regular);
-
-  private static double tableStartX = 50;
-  private static double tableStartY = 250;
-  private static double colWidth = 70;
-  private static double rowHeight = 20;
-  private static PdfDocument doc = new PdfDocument();
-
-  private static PdfPage page = doc.AddPage();
-  public static MemoryStream GeneratePdf()
+  public static class PdfSharpCoreStaticPage
   {
-    var gfx = XGraphics.FromPdfPage(page);
-    gfx.MUH = PdfFontEncoding.Unicode;
-    gfx.SmoothingMode = XSmoothingMode.HighQuality;
+    public static XFont fontBold = new XFont("Helvetica", 12, XFontStyle.Bold);
+    public static XFont font = new XFont("Helvetica", 10, XFontStyle.Regular);
 
-    // Define fonts
-
-    // Add image
-    
-    XImage image = XImage.FromFile("Assets/user.jpg"); // Replace with your image path
-    gfx.DrawImage(image, 50, 50, 100, 150);
-    
-    gfx.Headingz("Duplicate Stock Items Report", h1, XStringFormats.TopCenter);
-    gfx.Headingz("NC - Main Inventory", h2, XStringFormats.TopLeft);
-    string[] headers = { "Location", "Lot", "Expiry", "R.MTH", "PG", "OH QTY", "AVL QTY" };
-
-    foreach (var item in headers.Select((value, i) => new { i, value }))
+    public static void PrintTable()
     {
-      gfx.DrawCell(tableStartX + item.i * colWidth, tableStartY, colWidth, rowHeight, item.value, h3);
+      PdfDocument document = new PdfDocument();
+      PdfPage page = document.AddPage();
+
+      XGraphics gfx = XGraphics.FromPdfPage(page);
+      gfx.MUH = PdfFontEncoding.Unicode;
+      gfx.SmoothingMode = XSmoothingMode.HighQuality;
+      XImage image = XImage.FromFile("Assets/user.jpg");
+      gfx.DrawImage(image, 50, 50, 100, 150);
+
+      int yOffset = 400;
+      DrawText(gfx, "Muhammad Ahsan Moin", 200, yOffset += 25, fontBold, XBrushes.Blue);
+      DrawText(gfx, "NC - Main Inventory", 50, yOffset += 25, fontBold, XBrushes.Black);
+
+      DrawSection(gfx, "Natural Calm Original 16Oz", "SKU_NEW_3-S", "salman barcode", "60.00", "100.00",
+          new string[,] { { "S1R1B2", "1142533-S", "2025-06-30", "12.02", "GROUP C", "48", "48" } }, yOffset += 30);
+
+      DrawSection(gfx, "Multi Vitamin 110", "MSTESTSKU110-S", "3245667", "50.55", "62.55",
+          new string[,] { { "S2R3B4", "MSLOT111-S", "2025-06-12", "11.43", "GROUP D", "10", "20" } }, yOffset += 120);
+
+      string filePath = "./file1.pdf";
+      document.Save(filePath);
+      Console.WriteLine("PDF created successfully at: " + filePath);
     }
-    string[,] rows = new string[,]
+
+    private static void DrawSection(XGraphics gfx, string title, string sku, string barcode, string cost, string listPrice, string[,] tableData, int startY)
     {
-        { "SOR1B2", "290323-S", "2026-04-08", "21.29", "GROUP A", "25", "25" },
-         { "SOR1B2", "290323-S", "2026-04-08", "21.29", "GROUP A", "25", "25" }
-    };
-    for (int row = 0; row < rows.GetLength(0); row++)
+      DrawText(gfx, title, 50, startY, fontBold, XBrushes.Black);
+
+      DrawText(gfx, "SKU", 50, startY - 20, fontBold, XBrushes.Black);
+      DrawText(gfx, sku, 100, startY - 20, font, XBrushes.Black);
+      DrawText(gfx, "Barcode", 50, startY - 40, fontBold, XBrushes.Black);
+      DrawText(gfx, barcode, 100, startY - 40, font, XBrushes.Black);
+
+      DrawText(gfx, "Cost", 450, startY - 20, fontBold, XBrushes.Black);
+      DrawText(gfx, cost, 500, startY - 20, font, XBrushes.Black);
+      DrawText(gfx, "List Price", 450, startY - 40, fontBold, XBrushes.Black);
+      DrawText(gfx, listPrice, 500, startY - 40, font, XBrushes.Black);
+
+      DrawTable(gfx, tableData, 50, startY - 50);
+    }
+
+    private static void DrawTable(XGraphics gfx, string[,] tableData, int startX, int startY)
     {
-      for (int col = 0; col < rows.GetLength(1); col++)
+      int rowHeight = 20;
+      int columnWidth = 80;
+      int rowCount = tableData.GetLength(0);
+      int columnCount = tableData.GetLength(1);
+
+      for (int i = 0; i < rowCount; i++)
       {
-        gfx.DrawCell(tableStartX + col * colWidth, tableStartY + (row + 1) * rowHeight, colWidth, rowHeight, rows[row, col], p);
+        for (int j = 0; j < columnCount; j++)
+        {
+          DrawText(gfx, tableData[i, j], startX + j * columnWidth, startY + i * rowHeight, font, XBrushes.Black);
+        }
       }
     }
 
-
-
-
-    var ms = new MemoryStream();
-    doc.Save(ms, false);
-    ms.Seek(0, SeekOrigin.Begin);
-    using (var fileStream = new FileStream("file2.pdf", FileMode.Create, FileAccess.Write))
+    private static void DrawText(XGraphics gfx, string text, int x, int y, XFont font, XBrush brush)
     {
-      ms.CopyTo(fileStream);
+      gfx.DrawString(text, font, brush, x, y);
     }
-    return ms;
   }
-  // Helper method to draw a table cell with borders
-  private static void DrawCell(this XGraphics gfx, double x, double y, double width, double height, string text, XFont font)
-  {
-    gfx.DrawRectangle(XPens.Black, x, y, width, height);
-    gfx.DrawString(text, font, XBrushes.Black, new XRect(x, y, width, height), XStringFormats.Center);
-  }
-  private static void Headingz(this XGraphics gfx, string Heading, XFont font, XStringFormat align)
-  {
-    gfx.DrawString(Heading, font, XBrushes.Black,
-    new XRect(50, 100, page.Width, 0), align);
-  }
-  // private static XGraphics AddTableAllHeading(this XGraphics gfx)
-  // {
-  //   gfx
-  //     .DrawTableHeading("Location")
-  //     .DrawTableHeading("Lot")
-  //     .DrawTableHeading("Expiry")
-  //     .DrawTableHeading("R.MTH")
-  //     .DrawTableHeading("PG")
-  //     .DrawTableHeading("OH QTY")
-  //     .DrawTableHeading("AVL QTY");
-  //   return gfx;
-  // }
-
-  // private static XGraphics DrawTableHeading(this XGraphics gfx, string Name)
-  // {
-  //   gfx.DrawString(
-  //    Name, h3, XBrushes.Black,
-  //    new XRect(
-  //       tableStartX,
-  //       tableStartY,
-  //       colWidth,
-  //       rowHeight
-  //     ),
-  //    XStringFormats.Center);
-  //   return gfx;
-  // }
 }

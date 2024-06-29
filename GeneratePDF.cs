@@ -1,8 +1,6 @@
-
 using sharpPDF;
 using sharpPDF.Enumerators;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using System.Windows;
 
 namespace NetTest.GeneratePDF
 {
@@ -14,18 +12,23 @@ namespace NetTest.GeneratePDF
 
     public static async void PrintTable()
     {
-      pdfDocument myDoc = new pdfDocument("My PDF Document", "Me");
-      pdfPage page = myDoc.addPage();
+      // string imagePath = @"Assets/user.jpg";
+      // FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read);
+      // byte[] imageData = new byte[fs.Length];
+      // await fs.ReadAsync(imageData, 0, Convert.ToInt32(fs.Length));
+      // fs.Close();
+
+      pdfDocument doc = new pdfDocument("My PDF Document", "Me");
+      pdfPage page = doc.addPage();
       int yAxis = 750;
-      using (Image<Rgba32> image = Image.Load<Rgba32>("Assets/user.jpg"))
-      {
-        using (var ms = new MemoryStream())
-        {
-          image.SaveAsJpeg(ms);
-          ms.Seek(0, SeekOrigin.Begin);
-          page.addImage(ms, 50, 50, 100, 150);
-        }
-      }
+      // page.addImage(fs, 200,20, 100, 150);
+
+      // XGraphics gfx = XGraphics.FromPdfPage(page);
+      // gfx.MUH = PdfFontEncoding.Unicode;
+      // gfx.SmoothingMode = XSmoothingMode.HighQuality;
+      // XImage image = XImage.FromFile("Assets/user.jpg");
+      // gfx.DrawImage(image, 50, 50, 100, 150);
+
       page.addText("Muhammad Ahsan Moin", 200, yAxis -= 25, fontBold, 22, predefinedColor.csBlue);
       page.addText("NC - Main Inventory", 50, yAxis -= 25, fontBold, 16);
       page.AddSection("Natural Calm Original 16Oz",
@@ -36,7 +39,7 @@ namespace NetTest.GeneratePDF
           new string[,] { { "S1R1B2", "1142533-S", "2025-06-30", "12.02", "GROUP C", "48", "48" } }, yAxis -= 30);
       page.AddSection("Multi Vitamin 110", "MSTESTSKU110-S", "3245667", "50.55", "62.55",
                  new string[,] { { "S2R3B4", "MSLOT111-S", "2025-06-12", "11.43", "GROUP D", "10", "20" } }, yAxis -= 120);
-      myDoc.createPDF(@"./file.pdf");
+      doc.createPDF(@"./file.pdf");
       Console.WriteLine("PDF created successfully!");
     }
 
@@ -91,3 +94,7 @@ namespace NetTest.GeneratePDF
     }
   }
 }
+
+
+
+    
