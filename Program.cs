@@ -1,6 +1,4 @@
 
-using NetTest.GeneratePDF;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,13 +9,14 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+// if (app.Environment.IsDevelopment())
+// {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+    // app.UseDeveloperExceptionPage();
+// }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 var summaries = new[]
 {
@@ -26,8 +25,8 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 { 
-    PdfSharpCoreStaticPage.PrintTable();
-    GenerateTable.PrintTable();
+   
+    GenerateNPOI.Generate();
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (

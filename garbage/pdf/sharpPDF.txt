@@ -39,7 +39,7 @@ namespace NetTest.GeneratePDF
           new string[,] { { "S1R1B2", "1142533-S", "2025-06-30", "12.02", "GROUP C", "48", "48" } }, yAxis -= 30);
       page.AddSection("Multi Vitamin 110", "MSTESTSKU110-S", "3245667", "50.55", "62.55",
                  new string[,] { { "S2R3B4", "MSLOT111-S", "2025-06-12", "11.43", "GROUP D", "10", "20" } }, yAxis -= 120);
-      doc.createPDF(@"./file.pdf");
+      doc.createPDF("Assets/file.pdf");
       Console.WriteLine("PDF created successfully!");
     }
 

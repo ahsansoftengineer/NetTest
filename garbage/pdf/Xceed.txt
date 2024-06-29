@@ -1,0 +1,29 @@
+using Xceed.Document.NET;
+using Xceed.Words.NET;
+
+public static class GenerateWord {
+  public static void GenerateFile() {
+     using (DocX document = DocX.Create("Assets/Sample.docx"))
+        {
+            // Add a heading
+            document.InsertParagraph("Example Document").Heading(HeadingType.Heading1);
+
+            // Add a paragraph
+            string loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed accumsan tincidunt lacus, at scelerisque ex blandit nec.";
+            document.InsertParagraph(loremIpsum);
+
+            // Add an image (replace "imagePath" with the path to your image file)
+            string imagePath = "Assets/user.jpg";
+            Image img = document.AddImage(imagePath);
+            Paragraph paragraph = document.InsertParagraph();
+            Picture picture = img.CreatePicture();
+            // picture.Width = 50;
+            // picture.Height = 100;
+            paragraph.InsertPicture(picture);
+
+            // Save the document
+            document.Save();
+        }
+
+  }
+}
