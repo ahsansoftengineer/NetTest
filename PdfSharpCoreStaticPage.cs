@@ -6,33 +6,52 @@ using System.IO;
 
 public static class PdfSharpCoreStaticPage
 {
+
+  public static string fF = "Sans Serif";
+  public static XFont h1 = new XFont(fF, 20, XFontStyle.Bold);
+  public static XFont h2 = new XFont(fF, 16, XFontStyle.Bold);
+  public static XFont h3 = new XFont(fF, 14, XFontStyle.Bold);
+  public static XFont p = new XFont(fF, 12, XFontStyle.Regular);
+
+  public static double tableStartX = 50;
+  public static double tableStartY = 250;
+  public static double colWidth = 70;
+  public static double rowHeight = 20;
+  public static PdfDocument document = new PdfDocument();
+  public static PdfPage page = document.AddPage();
   public static MemoryStream GeneratePdf()
   {
-    var document = new PdfDocument();
-    var page = document.AddPage();
     var gfx = XGraphics.FromPdfPage(page);
 
     // Define fonts
-    var font = new XFont("Arial", 12, XFontStyle.Regular);
-    var fontBold = new XFont("Arial", 12, XFontStyle.Bold);
-
-    // Add heading
-    gfx.DrawString("Sample Report", fontBold, XBrushes.Black,
-        new XRect(0, 20, page.Width, 0), XStringFormats.TopCenter);
 
     // Add image
     XImage image = XImage.FromFile("Assets/user.jpg"); // Replace with your image path
-    gfx.DrawImage(image, 50, 50, 200, 150);
+    gfx.DrawImage(image, 50, 50, 100, 150);
 
-    // Add table headers
-    gfx.DrawString("Name", fontBold, XBrushes.Black, new XRect(50, 250, 100, 20), XStringFormats.TopLeft);
-    gfx.DrawString("Age", fontBold, XBrushes.Black, new XRect(150, 250, 100, 20), XStringFormats.TopLeft);
-    gfx.DrawString("Country", fontBold, XBrushes.Black, new XRect(250, 250, 100, 20), XStringFormats.TopLeft);
+    gfx.CenterH1("Duplicate Stock Items Report", h1, XStringFormats.TopCenter);
+    gfx.CenterH1("NC - Main Inventory", h2, XStringFormats.TopLeft);
+    string[] headers = { "Location", "Lot", "Expiry", "R.MTH", "PG", "OH QTY", "AVL QTY" };
 
-    // Add table rows
-    DrawTableRow(gfx, font, "John Doe", "30", "USA", 50, 270, page.Width);
-    DrawTableRow(gfx, font, "Jane Smith", "25", "Canada", 50, 290, page.Width);
-    DrawTableRow(gfx, font, "Ahmed Khan", "35", "India", 50, 310, page.Width);
+    foreach (var item in headers.Select((value, i) => new { i, value }))
+    {
+      gfx.DrawCell(tableStartX + item.i * colWidth, tableStartY, colWidth, rowHeight, item.value, h3);
+    }
+    string[,] rows = new string[,]
+    {
+        { "SOR1B2", "290323-S", "2026-04-08", "21.29", "GROUP A", "25", "25" },
+         { "SOR1B2", "290323-S", "2026-04-08", "21.29", "GROUP A", "25", "25" }
+    };
+    for (int row = 0; row < rows.GetLength(0); row++)
+    {
+      for (int col = 0; col < rows.GetLength(1); col++)
+      {
+        gfx.DrawCell(tableStartX + col * colWidth, tableStartY + (row + 1) * rowHeight, colWidth, rowHeight, rows[row, col], p);
+      }
+    }
+
+
+
 
     var ms = new MemoryStream();
     document.Save(ms, false);
@@ -43,11 +62,41 @@ public static class PdfSharpCoreStaticPage
     }
     return ms;
   }
-  // Helper method to draw table row
-  private static void DrawTableRow(XGraphics gfx, XFont font, string col1, string col2, string col3, double x, double y, double pageWidth)
+  // Helper method to draw a table cell with borders
+  private static void DrawCell(this XGraphics gfx, double x, double y, double width, double height, string text, XFont font)
   {
-    gfx.DrawString(col1, font, XBrushes.Black, new XRect(x, y, 100, 20), XStringFormats.TopLeft);
-    gfx.DrawString(col2, font, XBrushes.Black, new XRect(x + 100, y, 100, 20), XStringFormats.TopLeft);
-    gfx.DrawString(col3, font, XBrushes.Black, new XRect(x + 200, y, 100, 20), XStringFormats.TopLeft);
+    gfx.DrawRectangle(XPens.Black, x, y, width, height);
+    gfx.DrawString(text, font, XBrushes.Black, new XRect(x, y, width, height), XStringFormats.Center);
   }
+  public static void CenterH1(this XGraphics gfx, string Heading, XFont font, XStringFormat align)
+  {
+    gfx.DrawString(Heading, font, XBrushes.Black,
+    new XRect(50, 400, page.Width, 0), align);
+  }
+  // public static XGraphics AddTableAllHeading(this XGraphics gfx)
+  // {
+  //   gfx
+  //     .DrawTableHeading("Location")
+  //     .DrawTableHeading("Lot")
+  //     .DrawTableHeading("Expiry")
+  //     .DrawTableHeading("R.MTH")
+  //     .DrawTableHeading("PG")
+  //     .DrawTableHeading("OH QTY")
+  //     .DrawTableHeading("AVL QTY");
+  //   return gfx;
+  // }
+
+  // public static XGraphics DrawTableHeading(this XGraphics gfx, string Name)
+  // {
+  //   gfx.DrawString(
+  //    Name, h3, XBrushes.Black,
+  //    new XRect(
+  //       tableStartX,
+  //       tableStartY,
+  //       colWidth,
+  //       rowHeight
+  //     ),
+  //    XStringFormats.Center);
+  //   return gfx;
+  // }
 }
