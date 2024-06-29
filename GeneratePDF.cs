@@ -1,7 +1,8 @@
 
-using PdfSharpCore.Drawing;
 using sharpPDF;
 using sharpPDF.Enumerators;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace NetTest.GeneratePDF
 {
@@ -13,35 +14,29 @@ namespace NetTest.GeneratePDF
 
     public static async void PrintTable()
     {
-      // Create a new PDF document
       pdfDocument myDoc = new pdfDocument("My PDF Document", "Me");
-
-      // Add a new page to the document
-      pdfPage myPage = myDoc.addPage();
-      // Add main title
+      pdfPage page = myDoc.addPage();
       int yAxis = 750;
-      XImage image = XImage.FromFile("Assets/user.jpg"); 
-      using var ms = new MemoryStream();
-      myPage.addImage(image.AsBitmap(), 50, 50, 100, 150);
-
-      myPage.addText("Muhammad Ahsan Moin", 200, yAxis -= 25, fontBold, 22, predefinedColor.csBlue);
-      myPage.addText("NC - Main Inventory", 50, yAxis -= 25, fontBold, 16);
-
-      // Add first section
-      myPage.AddSection("Natural Calm Original 16Oz",
+      using (Image<Rgba32> image = Image.Load<Rgba32>("Assets/user.jpg"))
+      {
+        using (var ms = new MemoryStream())
+        {
+          image.SaveAsJpeg(ms);
+          ms.Seek(0, SeekOrigin.Begin);
+          page.addImage(ms, 50, 50, 100, 150);
+        }
+      }
+      page.addText("Muhammad Ahsan Moin", 200, yAxis -= 25, fontBold, 22, predefinedColor.csBlue);
+      page.addText("NC - Main Inventory", 50, yAxis -= 25, fontBold, 16);
+      page.AddSection("Natural Calm Original 16Oz",
           "SKU_NEW_3-S",
           "salman barcode",
           "60.00",
           "100.00",
           new string[,] { { "S1R1B2", "1142533-S", "2025-06-30", "12.02", "GROUP C", "48", "48" } }, yAxis -= 30);
-
-      // Add second section
-      myPage.AddSection("Multi Vitamin 110", "MSTESTSKU110-S", "3245667", "50.55", "62.55",
+      page.AddSection("Multi Vitamin 110", "MSTESTSKU110-S", "3245667", "50.55", "62.55",
                  new string[,] { { "S2R3B4", "MSLOT111-S", "2025-06-12", "11.43", "GROUP D", "10", "20" } }, yAxis -= 120);
-
-      // Save the document
       myDoc.createPDF(@"./file.pdf");
-
       Console.WriteLine("PDF created successfully!");
     }
 
@@ -62,6 +57,12 @@ namespace NetTest.GeneratePDF
       page.addText(listPrice, 500, startY - 40, font, 10);
 
       // Create table
+      var table = AddTable(tableData);
+      page.addTable(table, 50, startY - 50);
+
+    }
+    private static pdfTable AddTable(string[,] tableData)
+    {
       pdfTable table = new pdfTable();
 
       table.borderSize = 1;
@@ -82,10 +83,8 @@ namespace NetTest.GeneratePDF
         }
         table.addRow(row);
       }
-
-      page.addTable(table, 50, startY - 50);
+      return table;
     }
-
     private static void AddHeader(this pdfTable table, string Value, int columnAlign)
     {
       table.tableHeader.addColumn(new pdfTableColumn(Value, align, columnAlign));
